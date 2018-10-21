@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
          hp->h_length);
    server.sin_port = htons(atoi(argv[2]));
    length=sizeof(struct sockaddr_in);
-   printf("Please enter the message: ");
+   printf("Enter String: ");
    bzero(buffer,256);
    fgets(buffer,255,stdin);
    n=sendto(sock,buffer,
@@ -44,7 +44,6 @@ int main(int argc, char *argv[])
    if (n < 0) error("Sendto");
    n = recvfrom(sock,buffer,256,0,(struct sockaddr *)&from, &length);
    if (n < 0) error("recvfrom");
-   write(1,"Got an ack: ",12);
    write(1,buffer,n);
    close(sock);
    return 0;
