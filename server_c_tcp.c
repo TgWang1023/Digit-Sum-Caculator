@@ -50,17 +50,17 @@ int main(int argc, char *argv[])
      bzero(buffer,256);
      n = read(newsockfd,buffer,255);
      if (n < 0) error("ERROR reading from socket");
-     printf("%s", buffer);
+     buffer[strlen(buffer) - 1] = 0;
      int digitOnly = 1;
      if(strlen(buffer) == 0) {
          digitOnly = 0;
-         n = write(newsockfd,"From Server: Sorry, cannot compute!",35);
+         n = write(newsockfd,"From Server: Sorry, cannot compute!\n",36);
          if (n < 0) error("ERROR writing to socket");
      }
      for(int i = 0; i < strlen(buffer); i++) {
-         if(!isdigit((unsigned char)buffer[i])) {
+         if(buffer[i] < '0' || buffer[i] > '9') {
              digitOnly = 0;
-             n = write(newsockfd,"From Server: Sorry, cannot compute!",35);
+             n = write(newsockfd,"From Server: Sorry, cannot compute!\n",36);
              if (n < 0) error("ERROR writing to socket");
              break;
          }
@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
             }
             sprintf(buffer, "%i", total);
             strcat(response, buffer);
+            strcat(response, "\n");
             n = write(newsockfd, response, strlen(response));
             if (n < 0) error("ERROR writing to socket");
             strcpy(response, "From Server: ");
