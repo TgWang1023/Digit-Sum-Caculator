@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
         printf("%s", "From Server: ");
         printf("%s", buffer);
         printf("\n");
-        if(strlen(buffer) <= 1) {
+        if(strlen(buffer) <= 1 || strcmp(buffer, "Sorry, cannot compute!") == 0) {
             close(sockfd);
             return 0;
         }

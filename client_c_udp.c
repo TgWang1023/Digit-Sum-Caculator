@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
    unsigned int length;
    struct sockaddr_in server, from;
    struct hostent *hp;
-   char buffer[1024];
+   char buffer[256];
    
    if (argc != 3) { printf("Usage: server port\n");
                     exit(1);
@@ -36,25 +36,41 @@ int main(int argc, char *argv[])
          hp->h_length);
    server.sin_port = htons(atoi(argv[2]));
    length=sizeof(struct sockaddr_in);
+   /*
+    printf("Please enter the message: ");
+   bzero(buffer,256);
+   fgets(buffer,255,stdin);
+   n=sendto(sock,buffer,
+            strlen(buffer),0,(const struct sockaddr *)&server,length);
+   if (n < 0) error("Sendto");
+   n = recvfrom(sock,buffer,256,0,(struct sockaddr *)&from, &length);
+   if (n < 0) error("recvfrom");
+   write(1,"Got an ack: ",12);
+   write(1,buffer,n);
+   close(sock);
+   return 0;
+   */
    printf("Enter String: ");
-   bzero(buffer,1024);
-   fgets(buffer,1023,stdin);
-   buffer[strlen(buffer) - 1] = 0;
+    bzero(buffer,256);
+    fgets(buffer,255,stdin);
+    buffer[strlen(buffer) - 1] = 0;
     while(1) {
         n = sendto(sock,buffer,strlen(buffer),0,(const struct sockaddr *)&server,length);
         if(n < 0) 
-            error("send to");
-        bzero(buffer,1024);
-        n = recvfrom(sock,buffer,1024, 0,(struct sockaddr *)&from, &length);
+            error("ERROR writing to socket");
+        bzero(buffer,256);
+        n = recvfrom(sock,buffer,256,0,(struct sockaddr *)&from, &length);
         if(n < 0) 
-            error("recv from");
-        printf("%s", "From Server: ");
-        printf("%s", buffer);
-        printf("\n");
-        if(strlen(buffer) <= 1) {
+            error("ERROR reading from socket");
+        write(1,"From Server: ",13);
+        write(1,buffer,n);
+        write(1,"\n",1);
+        if(strlen(buffer) <= 1 || strcmp(buffer, "Sorry, cannot compute!") == 0) {
+            close(sock);
             return 0;
         }
     }
+
 }
 
 void error(const char *msg)
