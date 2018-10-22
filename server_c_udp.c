@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
    char buf[1024];
 
    if (argc < 2) {
-      fprintf(stderr, "ERROR, no port provided\n");
+      fprintf(stderr, "usage: %s port\n", argv[0]);
       exit(0);
    }
    

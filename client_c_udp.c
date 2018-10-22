@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
    struct hostent *hp;
    char buffer[256];
    
-   if (argc != 3) { printf("Usage: server port\n");
+   if (argc != 3) { printf("usage: %s hostname port\n", argv[0]);
                     exit(1);
    }
    sock= socket(AF_INET, SOCK_DGRAM, 0);
