@@ -54,6 +54,12 @@ int main(int argc, char *argv[])
    while(1) {
         n = recvfrom(sock,buf,1024,0,(struct sockaddr *)&from,&fromlen);
         if (n < 0) error("recvfrom");
+        if(strlen(buf) == 0) {
+            n = sendto(sock,"Sorry, cannot compute!",23,0,(struct sockaddr *)&from,fromlen);
+            if (n < 0) error("sendto");
+            close(sock);
+            return 0; 
+        }
         for(int i = 0; i < strlen(buf); i++) {
             if(buf[i] < '0' || buf[i] > '9') {
                 n = sendto(sock,"Sorry, cannot compute!",23,0,(struct sockaddr *)&from,fromlen);
