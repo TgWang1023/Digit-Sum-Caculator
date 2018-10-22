@@ -67,10 +67,13 @@ int main(int argc, char *argv[])
             sprintf(buffer, "%i", total);
             strcat(response, buffer);
             strcat(response, "\n");
-            n = sendto(sock, response, strlen(response), 0, (struct sockaddr *)&from,fromlen);
+            printf("%s", "came here");
             if (n < 0) error("send to");
-            strcpy(response, "From Server: ");
+            if(strlen(buffer) > 1) {
+                strcat(response, "From Server: ");
+            }
          }
+         n = sendto(sock, response, strlen(response), 0, (struct sockaddr *)&from,fromlen);
      }
    return 0;
 }
