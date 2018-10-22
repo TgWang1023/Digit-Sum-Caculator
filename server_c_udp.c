@@ -24,7 +24,6 @@ int main(int argc, char *argv[])
    struct sockaddr_in server;
    struct sockaddr_in from;
    char buffer[1024];
-   char response[1024] = "From Server: ";
 
    if (argc < 2) {
       fprintf(stderr, "ERROR, no port provided\n");
@@ -41,39 +40,36 @@ int main(int argc, char *argv[])
    if (bind(sock,(struct sockaddr *)&server,length)<0) 
        error("binding");
    fromlen = sizeof(struct sockaddr_in);
-   n = recvfrom(sock,buffer,1024,0,(struct sockaddr *)&from,&fromlen);
-   if (n < 0) error("recvfrom");
-     buffer[strlen(buffer) - 1] = 0;
-     int digitOnly = 1;
-     if(strlen(buffer) == 0) {
-         digitOnly = 0;
-         n = sendto(sock,"From Server: Sorry, cannot compute!\n",36,0,(struct sockaddr *)&from,fromlen);
-         if (n < 0) error("send to");
-     }
-     for(int i = 0; i < strlen(buffer); i++) {
-         if(buffer[i] < '0' || buffer[i] > '9') {
-             digitOnly = 0;
-             n = sendto(sock,"From Server: Sorry, cannot compute!\n",36,0,(struct sockaddr *)&from,fromlen);
-             if (n < 0) error("send to");
-             break;
-         }
-     }
-     if(digitOnly == 1) {
-         while(strlen(buffer) > 1) {
-            int total = 0;
-            for(int i = 0; i < strlen(buffer); i++) {
-                total += (buffer[i] - '0');
+    while(1) {
+        n = recvfrom(sock,buffer,1024,0,(struct sockaddr *)&from,&fromlen);
+        if (n < 0) error("recvfrom");
+        int digitOnly = 1;
+        if(strlen(buffer) == 0) {
+            digitOnly = 0;
+            n = sendto(sock,"From Server: Sorry, cannot compute!\n",36,
+                  0,(struct sockaddr *)&from,fromlen);
+            if (n < 0) error("ERROR writing to socket");
+        }
+        for(int i = 0; i < strlen(buffer); i++) {
+            if(buffer[i] < '0' || buffer[i] > '9') {
+                digitOnly = 0;
+                n = sendto(sock,"From Server: Sorry, cannot compute!\n",36,
+                  0,(struct sockaddr *)&from,fromlen);
+                if (n < 0) error("ERROR writing to socket");
+                break;
             }
-            sprintf(buffer, "%i", total);
-            strcat(response, buffer);
-            strcat(response, "\n");
-            printf("%s", "came here");
-            if (n < 0) error("send to");
-            if(strlen(buffer) > 1) {
-                strcat(response, "From Server: ");
-            }
-         }
-         n = sendto(sock, response, strlen(response), 0, (struct sockaddr *)&from,fromlen);
+        }
+        int total = 0;
+        for(int i = 0; i < strlen(buffer); i++) {
+            total += (buffer[i] - '0');
+        }
+        sprintf(buffer, "%i", total);
+        n = sendto(sock, buffer, strlen(buffer),
+                  0,(struct sockaddr *)&from,fromlen);
+        if (n < 0) error("ERROR writing to socket");
+        printf("%s", buffer);
+        if(strlen(buffer) <= 1) {
+            return 0; 
+        }
      }
-   return 0;
 }

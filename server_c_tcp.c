@@ -22,7 +22,6 @@ int main(int argc, char *argv[])
      int sockfd, newsockfd, portno;
      socklen_t clilen;
      char buffer[256];
-     char response[256] = "From Server: ";
      struct sockaddr_in serv_addr, cli_addr;
      int n;
      if (argc < 2) {
@@ -49,38 +48,35 @@ int main(int argc, char *argv[])
      if (newsockfd < 0) 
           error("ERROR on accept");
      bzero(buffer,256);
-     n = read(newsockfd,buffer,255);
-     if (n < 0) error("ERROR reading from socket");
-     buffer[strlen(buffer) - 1] = 0;
-     int digitOnly = 1;
-     if(strlen(buffer) == 0) {
-         digitOnly = 0;
-         n = write(newsockfd,"From Server: Sorry, cannot compute!\n",36);
-         if (n < 0) error("ERROR writing to socket");
-     }
-     for(int i = 0; i < strlen(buffer); i++) {
-         if(buffer[i] < '0' || buffer[i] > '9') {
-             digitOnly = 0;
-             n = write(newsockfd,"From Server: Sorry, cannot compute!\n",36);
-             if (n < 0) error("ERROR writing to socket");
-             break;
-         }
-     }
-     if(digitOnly == 1) {
-         while(strlen(buffer) > 1) {
-            int total = 0;
-            for(int i = 0; i < strlen(buffer); i++) {
-                total += (buffer[i] - '0');
-            }
-            sprintf(buffer, "%i", total);
-            strcat(response, buffer);
-            strcat(response, "\n");
-            n = write(newsockfd, response, strlen(response));
+     while(1) {
+        n = read(newsockfd,buffer,255);
+        if (n < 0) error("ERROR reading from socket");
+        int digitOnly = 1;
+        if(strlen(buffer) == 0) {
+            digitOnly = 0;
+            n = write(newsockfd,"From Server: Sorry, cannot compute!\n",36);
             if (n < 0) error("ERROR writing to socket");
-            strcpy(response, "From Server: ");
-         }
+        }
+        for(int i = 0; i < strlen(buffer); i++) {
+            if(buffer[i] < '0' || buffer[i] > '9') {
+                digitOnly = 0;
+                n = write(newsockfd,"From Server: Sorry, cannot compute!\n",36);
+                if (n < 0) error("ERROR writing to socket");
+                break;
+            }
+        }
+        int total = 0;
+        for(int i = 0; i < strlen(buffer); i++) {
+            total += (buffer[i] - '0');
+        }
+        sprintf(buffer, "%i", total);
+        n = write(newsockfd, buffer, strlen(buffer));
+        if (n < 0) error("ERROR writing to socket");
+        printf("%s", buffer);
+        if(strlen(buffer) <= 1) {
+            close(newsockfd);
+            close(sockfd);
+            return 0; 
+        }
      }
-     close(newsockfd);
-     close(sockfd);
-     return 0; 
 }

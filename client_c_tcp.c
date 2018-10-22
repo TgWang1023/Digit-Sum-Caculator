@@ -48,14 +48,21 @@ int main(int argc, char *argv[])
     printf("Enter String: ");
     bzero(buffer,256);
     fgets(buffer,255,stdin);
-    n = write(sockfd,buffer,strlen(buffer));
-    if(n < 0) 
-         error("ERROR writing to socket");
-    bzero(buffer,256);
-    n = read(sockfd,buffer,255);
-    if(n < 0) 
-         error("ERROR reading from socket");
-    printf("%s",buffer);
-    close(sockfd);
-    return 0;
+    buffer[strlen(buffer) - 1] = 0;
+    while(1) {
+        n = write(sockfd,buffer,strlen(buffer));
+        if(n < 0) 
+            error("ERROR writing to socket");
+        bzero(buffer,256);
+        n = read(sockfd,buffer,255);
+        if(n < 0) 
+            error("ERROR reading from socket");
+        printf("%s", "From Server: ");
+        printf("%s", buffer);
+        printf("\n");
+        if(strlen(buffer) <= 1) {
+            close(sockfd);
+            return 0;
+        }
+    }
 }
