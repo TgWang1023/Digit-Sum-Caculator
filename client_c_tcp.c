@@ -48,7 +48,9 @@ int main(int argc, char *argv[])
     printf("Enter String: ");
     bzero(buffer,256);
     fgets(buffer,255,stdin);
-    buffer[strlen(buffer) - 1] = 0;
+    if(strcmp(buffer, "") != '\n') {
+        buffer[strlen(buffer) - 1] = 0;
+    }
     while(1) {
         n = write(sockfd,buffer,strlen(buffer));
         if(n < 0) 
