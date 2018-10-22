@@ -29,6 +29,10 @@ int main(int argc, char *argv[])
          exit(1);
      }
      sockfd = socket(AF_INET, SOCK_STREAM, 0);
+     if (setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&(int){ 1 }, sizeof(int)) == -1) {
+        error("setsockopt");
+        exit(1);
+     }
 
      if (sockfd < 0) 
         error("ERROR opening socket");
