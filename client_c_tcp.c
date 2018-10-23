@@ -48,11 +48,9 @@ int main(int argc, char *argv[])
     printf("Enter String: ");
     bzero(buffer,256);
     fgets(buffer,255,stdin);
-    if(strcmp(buffer, "") != '\n') {
-        buffer[strlen(buffer) - 1] = 0;
-    }
+    buffer[strlen(buffer) - 1] = '\0';
     while(1) {
-        n = write(sockfd,buffer,strlen(buffer));
+        n = write(sockfd,buffer,strlen(buffer)+1);
         if(n < 0) 
             error("ERROR writing to socket");
         bzero(buffer,256);
