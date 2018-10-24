@@ -52,7 +52,9 @@ int main(int argc, char *argv[])
      if (newsockfd < 0) 
           error("ERROR on accept");
      bzero(buffer,256);
+     int wrongStr = 0;
      while(1) {
+        wrongStr = 0;
         n = read(newsockfd,buffer,255);
         if (n < 0) error("ERROR reading from socket");
         if(strlen(buffer) == 0) {
@@ -60,7 +62,31 @@ int main(int argc, char *argv[])
             if (n < 0) error("ERROR writing to socket");
             close(newsockfd);
             close(sockfd);
-            return 0; 
+            sockfd = socket(AF_INET, SOCK_STREAM, 0);
+            if (setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&(int){ 1 }, sizeof(int)) == -1) {
+                error("setsockopt");
+                exit(1);
+            }
+
+            if (sockfd < 0) 
+                error("ERROR opening socket");
+            bzero((char *) &serv_addr, sizeof(serv_addr));
+            portno = atoi(argv[1]);
+            serv_addr.sin_family = AF_INET;
+            serv_addr.sin_addr.s_addr = INADDR_ANY;
+            serv_addr.sin_port = htons(portno);
+            if (bind(sockfd, (struct sockaddr *) &serv_addr,
+                    sizeof(serv_addr)) < 0) 
+                    error("ERROR on binding");
+            listen(sockfd,5);
+            clilen = sizeof(cli_addr);
+            newsockfd = accept(sockfd, 
+                        (struct sockaddr *) &cli_addr, 
+                        &clilen);
+            if (newsockfd < 0) 
+                error("ERROR on accept");
+            bzero(buffer,256);
+            wrongStr = 1;
         }
         for(int i = 0; i < strlen(buffer); i++) {
             if(buffer[i] < '0' || buffer[i] > '9') {
@@ -68,20 +94,69 @@ int main(int argc, char *argv[])
                 if (n < 0) error("ERROR writing to socket");
                 close(newsockfd);
                 close(sockfd);
-                return 0; 
+                sockfd = socket(AF_INET, SOCK_STREAM, 0);
+                if (setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&(int){ 1 }, sizeof(int)) == -1) {
+                    error("setsockopt");
+                    exit(1);
+                }
+
+                if (sockfd < 0) 
+                    error("ERROR opening socket");
+                bzero((char *) &serv_addr, sizeof(serv_addr));
+                portno = atoi(argv[1]);
+                serv_addr.sin_family = AF_INET;
+                serv_addr.sin_addr.s_addr = INADDR_ANY;
+                serv_addr.sin_port = htons(portno);
+                if (bind(sockfd, (struct sockaddr *) &serv_addr,
+                        sizeof(serv_addr)) < 0) 
+                        error("ERROR on binding");
+                listen(sockfd,5);
+                clilen = sizeof(cli_addr);
+                newsockfd = accept(sockfd, 
+                            (struct sockaddr *) &cli_addr, 
+                            &clilen);
+                if (newsockfd < 0) 
+                    error("ERROR on accept");
+                bzero(buffer,256);
+                wrongStr = 1;
             }
         }
-        int total = 0;
-        for(int i = 0; i < strlen(buffer); i++) {
-            total += (buffer[i] - '0');
-        }
-        sprintf(buffer, "%i", total);
-        n = write(newsockfd, buffer, strlen(buffer));
-        if (n < 0) error("ERROR writing to socket");
-        if(strlen(buffer) <= 1) {
-            close(newsockfd);
-            close(sockfd);
-            return 0; 
+        if (wrongStr == 0) {
+            int total = 0;
+            for(int i = 0; i < strlen(buffer); i++) {
+                total += (buffer[i] - '0');
+            }
+            sprintf(buffer, "%i", total);
+            n = write(newsockfd, buffer, strlen(buffer));
+            if (n < 0) error("ERROR writing to socket");
+            if(strlen(buffer) <= 1) {
+                close(newsockfd);
+                close(sockfd);
+                sockfd = socket(AF_INET, SOCK_STREAM, 0);
+                if (setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&(int){ 1 }, sizeof(int)) == -1) {
+                    error("setsockopt");
+                    exit(1);
+                }
+
+                if (sockfd < 0) 
+                    error("ERROR opening socket");
+                bzero((char *) &serv_addr, sizeof(serv_addr));
+                portno = atoi(argv[1]);
+                serv_addr.sin_family = AF_INET;
+                serv_addr.sin_addr.s_addr = INADDR_ANY;
+                serv_addr.sin_port = htons(portno);
+                if (bind(sockfd, (struct sockaddr *) &serv_addr,
+                        sizeof(serv_addr)) < 0) 
+                        error("ERROR on binding");
+                listen(sockfd,5);
+                clilen = sizeof(cli_addr);
+                newsockfd = accept(sockfd, 
+                            (struct sockaddr *) &cli_addr, 
+                            &clilen);
+                if (newsockfd < 0) 
+                    error("ERROR on accept");
+                bzero(buffer,256);
+            }
         }
      }
 }
