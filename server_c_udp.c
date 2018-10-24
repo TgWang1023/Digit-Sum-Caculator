@@ -40,8 +40,9 @@ int main(int argc, char *argv[])
    if (bind(sock,(struct sockaddr *)&server,length)<0) 
        error("binding");
    fromlen = sizeof(struct sockaddr_in);
-
+   int wrongStr = 0;
    while(1) {
+       wrongStr = 0;
         n = recvfrom(sock,buf,1024,0,(struct sockaddr *)&from,&fromlen);
         if (n < 0) error("recvfrom");
         printf("%s", buf);
@@ -49,26 +50,57 @@ int main(int argc, char *argv[])
             n = sendto(sock,"Sorry, cannot compute!",23,0,(struct sockaddr *)&from,fromlen);
             if (n < 0) error("sendto");
             close(sock);
-            return 0; 
+            sock=socket(AF_INET, SOCK_DGRAM, 0);
+            if (sock < 0) error("Opening socket");
+            length = sizeof(server);
+            bzero(&server,length);
+            server.sin_family=AF_INET;
+            server.sin_addr.s_addr=INADDR_ANY;
+            server.sin_port=htons(atoi(argv[1]));
+            if (bind(sock,(struct sockaddr *)&server,length)<0) 
+                error("binding");
+            fromlen = sizeof(struct sockaddr_in);
+            wrongStr = 1;
         }
         for(int i = 0; i < strlen(buf); i++) {
             if(buf[i] < '0' || buf[i] > '9') {
                 n = sendto(sock,"Sorry, cannot compute!",23,0,(struct sockaddr *)&from,fromlen);
                 if (n < 0) error("sendto");
                 close(sock);
-                return 0; 
+                sock=socket(AF_INET, SOCK_DGRAM, 0);
+                if (sock < 0) error("Opening socket");
+                length = sizeof(server);
+                bzero(&server,length);
+                server.sin_family=AF_INET;
+                server.sin_addr.s_addr=INADDR_ANY;
+                server.sin_port=htons(atoi(argv[1]));
+                if (bind(sock,(struct sockaddr *)&server,length)<0) 
+                    error("binding");
+                fromlen = sizeof(struct sockaddr_in);
+                wrongStr = 1;
             }
         }
-        int total = 0;
-        for(int i = 0; i < strlen(buf); i++) {
-            total += (buf[i] - '0');
-        }
-        sprintf(buf, "%i", total);
-        n = sendto(sock, buf, strlen(buf),0,(struct sockaddr *)&from,fromlen);
-        if (n < 0) error("sendto");
-        if(strlen(buf) <= 1) {
-            close(sock);
-            return 0; 
+        if (wrongStr == 0) {
+            int total = 0;
+            for(int i = 0; i < strlen(buf); i++) {
+                total += (buf[i] - '0');
+            }
+            sprintf(buf, "%i", total);
+            n = sendto(sock, buf, strlen(buf),0,(struct sockaddr *)&from,fromlen);
+            if (n < 0) error("sendto");
+            if(strlen(buf) <= 1) {
+                close(sock);
+                sock=socket(AF_INET, SOCK_DGRAM, 0);
+                if (sock < 0) error("Opening socket");
+                length = sizeof(server);
+                bzero(&server,length);
+                server.sin_family=AF_INET;
+                server.sin_addr.s_addr=INADDR_ANY;
+                server.sin_port=htons(atoi(argv[1]));
+                if (bind(sock,(struct sockaddr *)&server,length)<0) 
+                    error("binding");
+                fromlen = sizeof(struct sockaddr_in);
+            } 
         }
      }
 }
